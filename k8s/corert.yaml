@@ -1,0 +1,59 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frundh-corert-webapi
+  labels:
+    component: frundh-corert-webapi
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+      nodePort: 32001
+  selector:
+    component: frundh-corert-webapi
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frundh-corert-webapi
+  labels:
+    component: frundh-corert-webapi
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      component: "frundh-corert-webapi"
+  template:
+    metadata:
+      labels:
+        component: "frundh-corert-webapi"
+    spec:
+      containers:
+        - name: frundh-corert-webapi
+          image: "frundh.corert.webapi"
+          imagePullPolicy: Never
+          ports:
+          - name: http
+            containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
